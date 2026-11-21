@@ -1,0 +1,10 @@
+# Patient data and keys: never commit
+app.db
+storage/
+backups/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/

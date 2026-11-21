@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Mis documentos</h1>
+{% for d in docs %}
+  <div class="card">
+    <p class="big">Documento disponible ({{ d.updated_at[:10] }})</p>
+    <p><a class="button" href="{{ url_for('patient_download', token=d.token) }}">Descargar PDF</a></p>
+    <p class="help">Por seguridad, este enlace vence en {{ minutes }} minutos. Si venció, recargue esta página.</p>
+  </div>
+{% else %}
+  <p>No tiene documentos disponibles.</p>
+{% endfor %}
+<p class="help">Si tiene dudas sobre su resultado, consulte con su médica o médico en el puesto de salud.</p>
+{% endblock %}

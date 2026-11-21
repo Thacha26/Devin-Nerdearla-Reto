@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Aviso para promotora de salud{% endblock %}
+{% block content %}
+<div class="notice">
+  <h1>Aviso para promotora de salud</h1>
+  <p>Fecha: {{ today }}</p>
+  <dl>
+    <dt>Paciente</dt><dd>{{ patient.full_name }}</dd>
+    <dt>Domicilio</dt><dd>{{ patient.address_1 or '—' }}{% if patient.address_2 %}<br>{{ patient.address_2 }}{% endif %}</dd>
+    <dt>Teléfono</dt><dd>{{ patient.phone_1 }}</dd>
+  </dl>
+  <p class="big">EIRA tiene un documento disponible para usted. Acérquese a su puesto de salud con su identificación oficial.</p>
+  <p class="help">Este aviso no contiene información clínica. Referencia: {{ patient.id_eira }} / #{{ r.id }}</p>
+  <p>Firma de quien entrega el aviso: ______________________</p>
+</div>
+<p class="no-print"><button onclick="window.print()">Imprimir</button></p>
+{% endblock %}

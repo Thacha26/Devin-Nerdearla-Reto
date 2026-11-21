@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Notificaciones (simulado)</h1>
+<p class="help">Los mensajes esperan aquí mientras no hay conexión. "Sincronizar" los envía (en este prototipo solo se marcan como enviados).</p>
+<form method="post" action="{{ url_for('outbox_sync') }}"><button type="submit">Sincronizar y enviar pendientes</button></form>
+<table>
+  <thead><tr><th>#</th><th>Resultado</th><th>Canal</th><th>Destino</th><th>Mensaje</th><th>Estado</th></tr></thead>
+  <tbody>
+  {% for m in messages %}
+    <tr>
+      <td>{{ m.id }}</td><td>#{{ m.result_id }}</td><td>{{ m.channel | upper }}</td><td>{{ m.recipient }}</td>
+      <td class="msg">{{ m.body }}</td>
+      <td>{% if m.status == 'sent' %}Enviado {{ m.sent_at }}{% else %}Pendiente{% endif %}</td>
+    </tr>
+  {% else %}
+    <tr><td colspan="6">No hay mensajes.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

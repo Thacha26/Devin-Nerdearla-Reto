@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Resultado #{{ r.id }}</h1>
+
+<ol class="steps">
+  {% set idx = STATUSES.index(r.status) %}
+  {% for s in STATUSES %}
+    <li class="{% if loop.index0 < idx %}done{% elif loop.index0 == idx %}current{% endif %}">{{ STATUS_LABELS[s] }}</li>
+  {% endfor %}
+</ol>
+
+<div class="grid">
+  <section>
+    <div class="card">
+      <h2>Paciente</h2>
+      {% if patient %}
+        <dl>
+          <dt>Nombre</dt><dd>{{ patient.full_name }}</dd>
+          <dt>ID EIRA</dt><dd>{{ patient.id_eira }}</dd>
+          <dt>CURP</dt><dd>{{ patient.national_id }}</dd>
+          <dt>Afiliación</dt><dd>{{ patient.affiliation }}{% if patient.affiliation_number %} · {{ patient.affiliation_number }}{% endif %}</dd>
+          <dt>Teléfonos</dt><dd>{{ patient.phone_1 }}{% if patient.phone_2 %} · {{ patient.phone_2 }}{% endif %}</dd>
+          <dt>Correo</dt><dd>{{ patient.email or '—' }}</dd>
+        </dl>
+      {% else %}
+        <p>Sin vincular. Archivo: <code>{{ r.original_filename }}</code></p>
+      {% endif %}
+    </div>
+
+    {# ---- Actions: only the next valid step is shown ---- #}
+    {% if r.status == 'UPLOADED' %}
+      <form method="post" action="{{ url_for('link_result', rid=r.id) }}" class="card">
+        <h2>1. Vincular a paciente</h2>
+        <p class="help">Compare con los datos impresos en el PDF.</p>
+        <label>CURP <input name="national_id" required></label>
+        <label>Fecha de nacimiento <input name="birth_date" type="date" required></label>
+        <button type="submit">Verificar identidad y vincular</button>
+      </form>
+
+    {% elif r.status == 'LINKED' %}
+      <form method="post" action="{{ url_for('authorize_result', rid=r.id) }}" class="card">
+        <h2>2. Revisar y autorizar</h2>
+        {% for key, label in checklist %}
+          <label class="check"><input type="checkbox" name="{{ key }}"> {{ label }}</label>
+        {% endfor %}
+        <button type="submit" name="decision" value="approve">Autorizar y notificar</button>
+        <hr>
+        <label>Motivo de rechazo <input name="reason" placeholder="Ej.: no coincide la paciente, archivo ilegible"></label>
+        <button type="submit" name="decision" value="reject" class="secondary">Rechazar</button>
+      </form>
+
+    {% elif r.status == 'NOTIFIED' %}
+      <form method="post" action="{{ url_for('assisted_delivery', rid=r.id) }}" class="card">
+        <h2>Entrega asistida en mostrador</h2>
+        <p class="help">Pida la identificación oficial. El código es opcional.</p>
+        <label>CURP <input name="national_id" required></label>
+        <label>Fecha de nacimiento <input name="birth_date" type="date" required></label>
+        <label>Código de retiro (si lo tiene) <input name="code" inputmode="numeric" maxlength="6"></label>
+        <button type="submit">Verificar y entregar</button>
+      </form>
+      <p><a class="button secondary" href="{{ url_for('print_notice', rid=r.id) }}" target="_blank">Imprimir aviso para promotora de salud</a></p>
+
+    {% elif r.status == 'DELIVERED' %}
+      <div class="card">
+        <h2>Entregado</h2>
+        <p><a class="button" href="{{ url_for('staff_pdf', rid=r.id) }}" target="_blank">Abrir PDF para imprimir</a></p>
+      </div>
+    {% endif %}
+  </section>
+
+  <section>
+    <iframe class="pdf" src="{{ url_for('staff_pdf', rid=r.id) }}" title="Vista del PDF"></iframe>
+  </section>
+</div>
+
+<h2>Registro de acciones</h2>
+<table>
+  <thead><tr><th>Fecha y hora</th><th>Quién</th><th>Acción</th><th>Detalle</th></tr></thead>
+  <tbody>
+  {% for e in audit %}
+    <tr><td>{{ e.ts }}</td><td>{{ e.actor }}</td><td>{{ e.action }}</td><td>{{ e.detail or '' }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
