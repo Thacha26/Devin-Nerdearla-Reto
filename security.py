@@ -22,13 +22,18 @@ def _read_or_create(path, factory):
 
 
 def load_or_create_secret(storage_dir):
+    # On a hosted deploy (e.g. Vercel) set EIRA_SECRET_KEY so every instance shares it.
+    if os.environ.get("EIRA_SECRET_KEY"):
+        return os.environ["EIRA_SECRET_KEY"].encode()
     return _read_or_create(os.path.join(storage_dir, SECRET_FILE), lambda: secrets.token_hex(32).encode())
 
 
 def _fernet():
     # PROTOTYPE: the key lives next to the data. A real pilot needs separate key
     # management (e.g. key on a different device / OS keyring) and a key backup plan.
-    key = _read_or_create(os.path.join(current_app.config["STORAGE_DIR"], KEY_FILE), Fernet.generate_key)
+    # On a hosted deploy set EIRA_FERNET_KEY (from Fernet.generate_key()).
+    key = os.environ.get("EIRA_FERNET_KEY", "").encode() or _read_or_create(
+        os.path.join(current_app.config["STORAGE_DIR"], KEY_FILE), Fernet.generate_key)
     return Fernet(key)
 
 
