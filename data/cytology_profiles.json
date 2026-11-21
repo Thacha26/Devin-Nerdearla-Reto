@@ -120,7 +120,7 @@
         "30_pathologist_review": "2. No",
         "30.1_pathologist_name": null,
         "31_recommendation": "1. Routine screening according to guidelines",
-        "32_cytotechnologist": "Citotecnologa Ficticia A",
+        "32_cytotechnologist": "Citotecnóloga Ficticia A",
         "33_report_date": "2026-11-09"
       }
     },
@@ -134,7 +134,7 @@
         "5_birth_date": "1979-09-30",
         "6_age": 47,
         "7_affiliation": "ISSSTE",
-        "8_health_unit": "Unidad Medica Ficticia Norte",
+        "8_health_unit": "Unidad Médica Ficticia Norte",
         "9_sample_date": "2026-10-28",
         "10_last_menstrual_period": "2026-10-15",
         "11_gestations": 2,
@@ -160,9 +160,9 @@
         "28.1_repeat_reason": null,
         "29_other_findings": ["B3. Reactive cellular changes associated with IUD"],
         "30_pathologist_review": "1. Yes",
-        "30.1_pathologist_name": "Dr. Patologo Ficticio",
+        "30.1_pathologist_name": "Dr. Patólogo Ficticio",
         "31_recommendation": "3. Refer to colposcopy",
-        "32_cytotechnologist": "Citotecnologa Ficticia B",
+        "32_cytotechnologist": "Citotecnóloga Ficticia B",
         "33_report_date": "2026-11-12"
       }
     },
@@ -204,7 +204,7 @@
         "30_pathologist_review": "2. No",
         "30.1_pathologist_name": null,
         "31_recommendation": "2. Repeat cytology",
-        "32_cytotechnologist": "Citotecnologa Ficticia A",
+        "32_cytotechnologist": "Citotecnóloga Ficticia A",
         "33_report_date": "2026-11-10"
       }
     }

@@ -194,6 +194,11 @@ def test_cytology_profiles():
     # Sample PDFs are generated from the profiles
     with open(os.path.join(seed.SAMPLE_DIR, "resultado_ana.pdf"), "rb") as fh:
         assert b"LSIL" in fh.read()
+    # ...printed in Spanish, with accents encoded for the PDF font
+    with open(os.path.join(seed.SAMPLE_DIR, "resultado_rosa.pdf"), "rb") as fh:
+        pdf = fh.read()
+    assert "Calidad de la muestra: 2. Inadecuada".encode("cp1252") in pdf
+    assert "Motivo de repetición: 4. Muestra mal fijada".encode("cp1252") in pdf
 
 
 def test_database_rules():

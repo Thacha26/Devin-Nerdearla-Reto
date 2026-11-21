@@ -51,7 +51,21 @@ PATIENTS = [
 
 
 PROFILES_PATH = os.path.join(BASE_DIR, "data", "cytology_profiles.json")
-SECTIONS = {"1": "I. IDENTIFICATION", "9": "II. CLINICAL HISTORY", "21": "III. SAMPLE COLLECTION", "26": "IV. RESULT"}
+SPANISH_PATH = os.path.join(BASE_DIR, "data", "cytology_form_es.json")
+
+
+def load_spanish(form):
+    """Spanish labels/options for the PDFs; every field and option must be translated."""
+    with open(SPANISH_PATH, encoding="utf-8") as fh:
+        es = json.load(fh)
+    for spec in form:
+        tr = es["fields"].get(spec["key"])
+        if tr is None:
+            raise ValueError("Missing Spanish label for " + spec["key"])
+        missing = [o for o in spec.get("options", []) if o not in tr.get("options", {})]
+        if missing:
+            raise ValueError("Missing Spanish options for {}: {}".format(spec["key"], missing))
+    return es
 
 
 def load_profiles():
@@ -81,21 +95,29 @@ def load_profiles():
     return data
 
 
-def profile_lines(form, values):
-    lines = ["LABORATORIO DEMO - CERVICAL CYTOLOGY REPORT (FICTITIOUS)", ""]
+def profile_lines(form, values, es):
+    """Report lines in Spanish. Profile values stay in English in the JSON and are translated here."""
+    lines = [es["title"], ""]
     for spec in form:
-        if spec["field"] in SECTIONS:
-            lines += ["", SECTIONS[spec["field"]]]
+        if spec["field"] in es["sections"]:
+            lines += ["", es["sections"][spec["field"]]]
+        tr = es["fields"][spec["key"]]
+        options = tr.get("options", {})
         value = values[spec["key"]]
         if isinstance(value, list):
-            value = "; ".join(value) or "None"
-        lines.append("{}. {}: {}".format(spec["field"], spec["label"], "-" if value is None else value))
-    lines += ["", "NO CLINICAL VALUE - FOR TESTING ONLY"]
+            value = "; ".join(options[v] for v in value) or es["none"]
+        elif value is None:
+            value = "-"
+        else:
+            value = options.get(value, value)
+        lines.append("{}. {}: {}".format(spec["field"], tr["label"], value))
+    lines += ["", es["footer"]]
     return lines
 
 
 def make_pdf(lines):
-    """Tiny valid one-page PDF (ASCII text only), no external libraries."""
+    """Tiny valid one-page PDF, no external libraries. Text is encoded as Windows-1252
+    (WinAnsiEncoding) so Spanish accents and ñ display correctly."""
     def esc(s):
         return s.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
 
@@ -107,13 +129,13 @@ def make_pdf(lines):
         "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R"
         " /Resources << /Font << /F1 5 0 R >> >> >>",
         "<< /Length {} >>\nstream\n{}\nendstream".format(len(stream), stream),
-        "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+        "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>",
     ]
     out = b"%PDF-1.4\n"
     offsets = []
     for i, obj in enumerate(objects, start=1):
         offsets.append(len(out))
-        out += "{} 0 obj\n{}\nendobj\n".format(i, obj).encode("latin-1")
+        out += "{} 0 obj\n{}\nendobj\n".format(i, obj).encode("cp1252")
     xref = len(out)
     out += "xref\n0 {}\n0000000000 65535 f \n".format(len(objects) + 1).encode()
     for off in offsets:
@@ -125,10 +147,11 @@ def make_pdf(lines):
 def write_samples():
     """One sample PDF per cytology profile, named after the patient's first name."""
     data = load_profiles()
+    es = load_spanish(data["form"])
     os.makedirs(SAMPLE_DIR, exist_ok=True)
     for prof in data["profiles"]:
         values = prof["values"]
-        pdf = make_pdf(profile_lines(data["form"], values))
+        pdf = make_pdf(profile_lines(data["form"], values, es))
         name = "resultado_{}.pdf".format(values["3_full_name"].split()[0].lower())
         with open(os.path.join(SAMPLE_DIR, name), "wb") as fh:
             fh.write(pdf)

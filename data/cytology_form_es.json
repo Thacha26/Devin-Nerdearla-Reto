@@ -1,0 +1,98 @@
+{
+  "_meta": {
+    "note": "Spanish labels and options used to print the sample PDFs. Keys and English option values must match data/cytology_profiles.json (seed.py checks this)."
+  },
+  "title": "LABORATORIO DEMO - REPORTE DE CITOLOGÍA CERVICAL (FICTICIO)",
+  "footer": "SIN VALOR CLÍNICO - SOLO PARA PRUEBAS",
+  "none": "Ninguno",
+  "sections": {
+    "1": "I. IDENTIFICACIÓN",
+    "9": "II. ANTECEDENTES CLÍNICOS",
+    "21": "III. TOMA DE LA MUESTRA",
+    "26": "IV. RESULTADO"
+  },
+  "fields": {
+    "1_folio": {"label": "Folio"},
+    "2_id_eira": {"label": "ID EIRA"},
+    "3_full_name": {"label": "Nombre completo"},
+    "4_national_id": {"label": "CURP"},
+    "5_birth_date": {"label": "Fecha de nacimiento"},
+    "6_age": {"label": "Edad (años)"},
+    "7_affiliation": {"label": "Afiliación", "options": {
+      "INSABI": "INSABI", "IMSS": "IMSS", "ISSSTE": "ISSSTE", "PEMEX": "PEMEX",
+      "SEDENA": "SEDENA", "SEMAR": "SEMAR", "OTHER": "OTRA", "NONE": "NINGUNA"}},
+    "8_health_unit": {"label": "Unidad de salud donde se tomó la muestra"},
+
+    "9_sample_date": {"label": "Fecha de toma de la muestra"},
+    "10_last_menstrual_period": {"label": "Fecha de última menstruación (FUM)"},
+    "11_gestations": {"label": "Gestas"},
+    "12_vaginal_births": {"label": "Partos"},
+    "13_cesareans": {"label": "Cesáreas"},
+    "14_abortions": {"label": "Abortos"},
+    "15_contraceptive_method": {"label": "Método anticonceptivo actual", "options": {
+      "1. None": "1. Ninguno", "2. Oral hormonal": "2. Hormonal oral", "3. Injectable": "3. Inyectable",
+      "4. Implant": "4. Implante", "5. IUD": "5. DIU", "6. Condom": "6. Condón",
+      "7. Tubal ligation": "7. Oclusión tubaria bilateral (OTB)", "8. Other": "8. Otro"}},
+    "16_pregnant": {"label": "Embarazo actual", "options": {"1. Yes": "1. Sí", "2. No": "2. No"}},
+    "17_menopause": {"label": "Menopausia", "options": {"1. Yes": "1. Sí", "2. No": "2. No"}},
+    "18_previous_cytology": {"label": "Citología previa", "options": {
+      "1. Yes": "1. Sí", "2. No": "2. No", "3. Does not know": "3. No sabe"}},
+    "18.1_previous_cytology_year": {"label": "Año de la citología previa"},
+    "19_previous_abnormal_result": {"label": "Resultado anormal previo", "options": {
+      "1. Yes": "1. Sí", "2. No": "2. No", "3. Does not know": "3. No sabe"}},
+    "20_hpv_vaccine": {"label": "Vacuna contra VPH", "options": {
+      "1. Yes": "1. Sí", "2. No": "2. No", "3. Does not know": "3. No sabe"}},
+
+    "21_cervix_appearance": {"label": "Aspecto del cuello uterino", "options": {
+      "1. Normal-appearing": "1. De aspecto normal", "2. Ectropion": "2. Ectropión",
+      "3. Inflamed (cervicitis)": "3. Inflamado (cervicitis)", "4. Suspicious lesion": "4. Lesión sospechosa",
+      "5. Not visualized": "5. No visible"}},
+    "22_collection_instrument": {"label": "Instrumento de toma", "options": {
+      "1. Ayre spatula": "1. Espátula de Ayre", "2. Cytobrush": "2. Citocepillo",
+      "3. Spatula and cytobrush": "3. Espátula y citocepillo", "4. Broom (liquid-based)": "4. Escobillón (base líquida)"}},
+    "23_sample_type": {"label": "Tipo de muestra", "options": {
+      "1. Conventional smear": "1. Extendido convencional", "2. Liquid-based": "2. Base líquida"}},
+    "24_collected_by": {"label": "Tomada por"},
+    "25_lab_received_date": {"label": "Fecha de recepción en laboratorio"},
+
+    "26_sample_adequacy": {"label": "Calidad de la muestra", "options": {
+      "1. Adequate": "1. Adecuada", "2. Inadequate": "2. Inadecuada"}},
+    "26.1_transformation_zone": {"label": "Presencia de zona de transformación", "options": {
+      "1. Yes": "1. Sí", "2. No": "2. No"}},
+    "27_bethesda_diagnosis": {"label": "Diagnóstico (Bethesda)", "options": {
+      "1. Negative for intraepithelial lesion or malignancy (NILM)": "1. Negativo para lesión intraepitelial o malignidad (NILM)",
+      "2. Atypical squamous cells of undetermined significance (ASC-US)": "2. Células escamosas atípicas de significado indeterminado (ASC-US)",
+      "3. Atypical squamous cells, cannot exclude HSIL (ASC-H)": "3. Células escamosas atípicas, no se descarta LEIAG (ASC-H)",
+      "4. Low-grade squamous intraepithelial lesion (LSIL)": "4. Lesión escamosa intraepitelial de bajo grado (LEIBG / LSIL)",
+      "5. High-grade squamous intraepithelial lesion (HSIL)": "5. Lesión escamosa intraepitelial de alto grado (LEIAG / HSIL)",
+      "6. Squamous cell carcinoma": "6. Carcinoma de células escamosas",
+      "7. Atypical glandular cells (AGC)": "7. Células glandulares atípicas (AGC)",
+      "8. Adenocarcinoma": "8. Adenocarcinoma"}},
+    "28_repeat_study": {"label": "Repetir estudio", "options": {"1. Yes": "1. Sí", "2. No": "2. No"}},
+    "28.1_repeat_reason": {"label": "Motivo de repetición", "options": {
+      "1. Insufficient cellularity": "1. Celularidad insuficiente", "2. Obscured by blood": "2. Oscurecida por sangre",
+      "3. Thick smear": "3. Extendido grueso", "4. Poorly fixed sample": "4. Muestra mal fijada",
+      "5. Obscured by inflammation": "5. Oscurecida por inflamación",
+      "6. Broken or unlabeled slide": "6. Laminilla rota o sin identificar", "7. Other": "7. Otro"}},
+    "29_other_findings": {"label": "Otros hallazgos", "options": {
+      "A1. Trichomonas vaginalis": "A1. Trichomonas vaginalis",
+      "A2. Fungal organisms consistent with Candida spp.": "A2. Organismos micóticos compatibles con Candida spp.",
+      "A3. Shift in flora suggestive of bacterial vaginosis": "A3. Cambio en la flora sugestivo de vaginosis bacteriana",
+      "A4. Bacteria consistent with Actinomyces spp.": "A4. Bacterias compatibles con Actinomyces spp.",
+      "A5. Cellular changes consistent with herpes simplex virus": "A5. Cambios celulares compatibles con virus del herpes simple",
+      "B1. Reactive cellular changes associated with inflammation": "B1. Cambios celulares reactivos asociados a inflamación",
+      "B2. Reactive cellular changes associated with radiation": "B2. Cambios celulares reactivos asociados a radiación",
+      "B3. Reactive cellular changes associated with IUD": "B3. Cambios celulares reactivos asociados a DIU",
+      "B4. Atrophy": "B4. Atrofia",
+      "B5. Glandular cells status post hysterectomy": "B5. Células glandulares posthisterectomía",
+      "C1. Endometrial cells in a woman 45 years or older": "C1. Células endometriales en mujer de 45 años o más"}},
+    "30_pathologist_review": {"label": "Revisado por patólogo/a", "options": {"1. Yes": "1. Sí", "2. No": "2. No"}},
+    "30.1_pathologist_name": {"label": "Patólogo/a"},
+    "31_recommendation": {"label": "Recomendación", "options": {
+      "1. Routine screening according to guidelines": "1. Tamizaje de rutina según la norma",
+      "2. Repeat cytology": "2. Repetir citología", "3. Refer to colposcopy": "3. Referir a colposcopia",
+      "4. Treat and repeat cytology": "4. Tratar y repetir citología", "5. Refer to oncology": "5. Referir a oncología"}},
+    "32_cytotechnologist": {"label": "Citotecnólogo/a"},
+    "33_report_date": {"label": "Fecha del reporte"}
+  }
+}
