@@ -6,6 +6,7 @@ Roles: physician (all staff steps) and patient (portal).
 import csv
 import io
 import os
+import sqlite3
 from datetime import timedelta
 
 from flask import Flask, Response, abort, flash, redirect, render_template, request, send_file, session, url_for
@@ -15,7 +16,7 @@ from werkzeug.utils import secure_filename
 
 import notify
 import security
-from models import ROLE_LABELS, STATUS_LABELS, STATUSES, TransitionError, close_db, get_db, init_db, log, now, transition
+from models import AFFILIATIONS, ROLE_LABELS, STATUS_LABELS, STATUSES, TransitionError, close_db, get_db, init_db, log, now, transition
 from security import actor, role_required
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -252,6 +253,63 @@ def assisted_delivery(rid):
         detail = "Entrega asistida ({})".format("con código" if code else "sin código, identificación presentada")
         try_transition(rid, "DELIVERED", "Identidad verificada. Puede imprimir el resultado.", detail=detail)
     return redirect(url_for("result_detail", rid=rid))
+
+
+# ---------- patients ----------
+
+PATIENT_FIELDS = ["id_eira", "full_name", "national_id", "birth_date", "phone_1", "phone_2",
+                  "address_1", "address_2", "email", "affiliation", "affiliation_number"]
+REQUIRED_PATIENT_FIELDS = {
+    "id_eira": "ID EIRA", "full_name": "Nombre completo", "national_id": "CURP",
+    "birth_date": "Fecha de nacimiento", "phone_1": "Teléfono 1", "affiliation": "Afiliación",
+}
+
+
+@app.route("/patients")
+@role_required("physician")
+def patients():
+    q = request.args.get("q", "").strip()
+    query = "SELECT p.*, (SELECT COUNT(*) FROM results r WHERE r.id_eira = p.id_eira) AS n_results FROM patients p"
+    params = ()
+    if q:
+        query += " WHERE p.full_name LIKE ? OR p.national_id LIKE ? OR p.id_eira LIKE ?"
+        params = ("%{}%".format(q),) * 3
+    rows = get_db().execute(query + " ORDER BY p.full_name", params).fetchall()
+    return render_template("patients.html", patients=rows, q=q)
+
+
+@app.route("/patients/new", methods=["GET", "POST"])
+@role_required("physician")
+def patient_new():
+    form = {f: request.form.get(f, "").strip() for f in PATIENT_FIELDS}
+    errors = []
+    if request.method == "POST":
+        form["national_id"] = form["national_id"].upper()
+        form["id_eira"] = form["id_eira"].upper()
+        errors = ["Falta: " + label for f, label in REQUIRED_PATIENT_FIELDS.items() if not form[f]]
+        if form["affiliation"] and form["affiliation"] not in AFFILIATIONS:
+            errors.append("Afiliación no válida.")
+        if form["email"] and "@" not in form["email"]:
+            errors.append("Correo no válido.")
+        if not errors:
+            db = get_db()
+            values = {f: (form[f] or None) for f in PATIENT_FIELDS}
+            try:
+                db.execute(
+                    "INSERT INTO patients ({}) VALUES ({})".format(
+                        ", ".join(PATIENT_FIELDS), ", ".join(":" + f for f in PATIENT_FIELDS)),
+                    values,
+                )
+                db.commit()
+            except sqlite3.IntegrityError:
+                errors.append("Ya existe una paciente con ese ID EIRA o esa CURP.")
+            else:
+                log(db, actor(), None, "Paciente registrada", "id_eira " + form["id_eira"])
+                flash("Paciente {} registrada.".format(form["full_name"]), "ok")
+                back = request.args.get("next_result", type=int)
+                return redirect(url_for("result_detail", rid=back) if back else url_for("patients"))
+    return render_template("patient_form.html", form=form, errors=errors, affiliations=AFFILIATIONS,
+                           next_result=request.args.get("next_result", type=int))
 
 
 # ---------- notifications, audit, export ----------

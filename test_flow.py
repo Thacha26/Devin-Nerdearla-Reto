@@ -124,6 +124,23 @@ def test_assisted_flow():
     assert c.get("/export.csv").status_code == 200
 
 
+def test_register_patient():
+    c = physician()
+    new = {"id_eira": "eira-0099", "full_name": "Lucia Test", "national_id": "tela900101mdfsss09",
+           "birth_date": "1990-01-01", "phone_1": "55 5555 0099", "affiliation": "PEMEX"}
+    # Missing phone_1 and bad affiliation are refused
+    r = c.post("/patients/new", data=dict(new, phone_1="", affiliation="FAKE"))
+    assert r.status_code == 200 and "Teléfono 1".encode() in r.data and "Afiliación no válida".encode() in r.data
+    # Valid patient is saved (IDs upper-cased) and shows in the list
+    assert c.post("/patients/new", data=new).status_code == 302
+    assert b"Lucia Test" in c.get("/patients?q=lucia").data
+    # Duplicate is refused
+    assert "Ya existe".encode() in c.post("/patients/new", data=new).data
+    # New patient can be linked to a result right away
+    rid = upload(c)
+    link_and_authorize(c, rid, {"national_id": "TELA900101MDFSSS09", "birth_date": "1990-01-01"})
+
+
 def test_database_rules():
     with sqlite3.connect(os.environ["EIRA_DB"]) as db:
         for bad in [("X1", "AAA", "", "IMSS"), ("X2", "BBB", "55 1", "FAKE")]:  # no phone_1 / bad affiliation
@@ -143,5 +160,6 @@ def test_database_rules():
 if __name__ == "__main__":
     test_portal_flow()
     test_assisted_flow()
+    test_register_patient()
     test_database_rules()
     print("OK: all flows passed")

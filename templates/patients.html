@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Pacientes</h1>
+<form method="get" class="search">
+  <label>Buscar por nombre, CURP o ID EIRA <input name="q" value="{{ q }}"></label>
+  <button type="submit">Buscar</button>
+  <a class="button secondary" href="{{ url_for('patient_new') }}">Registrar paciente</a>
+</form>
+<table>
+  <thead><tr><th>ID EIRA</th><th>Nombre</th><th>CURP</th><th>Teléfono 1</th><th>Afiliación</th><th>Resultados</th></tr></thead>
+  <tbody>
+  {% for p in patients %}
+    <tr>
+      <td>{{ p.id_eira }}</td><td>{{ p.full_name }}</td><td>{{ p.national_id }}</td>
+      <td>{{ p.phone_1 }}</td><td>{{ p.affiliation }}</td><td>{{ p.n_results }}</td>
+    </tr>
+  {% else %}
+    <tr><td colspan="6">No se encontraron pacientes.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
