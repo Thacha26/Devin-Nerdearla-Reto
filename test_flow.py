@@ -178,6 +178,24 @@ def test_add_physician():
     assert p.post("/physicians/new", data=new).status_code == 403
 
 
+def test_cytology_profiles():
+    data = seed.load_profiles()  # also validates against the form skeleton and seed PATIENTS
+    p1, p2, p3 = (p["values"] for p in data["profiles"])
+    # 1. Normal
+    assert p1["26_sample_adequacy"] == "1. Adequate" and p1["27_bethesda_diagnosis"].startswith("1. ")
+    assert p1["28_repeat_study"] == "2. No" and p1["30_pathologist_review"] == "2. No"
+    # 2. Findings: ASC-US or LSIL, one Category B finding, pathologist review
+    assert p2["26_sample_adequacy"] == "1. Adequate" and p2["27_bethesda_diagnosis"][:2] in ("2.", "4.")
+    assert len(p2["29_other_findings"]) == 1 and p2["29_other_findings"][0].startswith("B")
+    assert p2["30_pathologist_review"] == "1. Yes"
+    # 3. Repeat study
+    assert p3["26_sample_adequacy"] == "2. Inadequate" and p3["28_repeat_study"] == "1. Yes"
+    assert p3["28.1_repeat_reason"] and p3["27_bethesda_diagnosis"] is None
+    # Sample PDFs are generated from the profiles
+    with open(os.path.join(seed.SAMPLE_DIR, "resultado_ana.pdf"), "rb") as fh:
+        assert b"LSIL" in fh.read()
+
+
 def test_database_rules():
     with sqlite3.connect(os.environ["EIRA_DB"]) as db:
         for bad in [("X1", "AAA", "", "IMSS"), ("X2", "BBB", "55 1", "FAKE")]:  # no phone_1 / bad affiliation
@@ -200,5 +218,6 @@ if __name__ == "__main__":
     test_register_patient()
     test_edit_patient()
     test_add_physician()
+    test_cytology_profiles()
     test_database_rules()
     print("OK: all flows passed")
