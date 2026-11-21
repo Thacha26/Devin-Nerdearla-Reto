@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Registro de acciones</h1>
+<p class="help">Solo se puede agregar: la base de datos no permite editar ni borrar entradas.</p>
+<table>
+  <thead><tr><th>Fecha y hora</th><th>Quién</th><th>Resultado</th><th>Acción</th><th>Detalle</th></tr></thead>
+  <tbody>
+  {% for e in entries %}
+    <tr>
+      <td>{{ e.ts }}</td><td>{{ e.actor }}</td>
+      <td>{% if e.result_id %}<a href="{{ url_for('result_detail', rid=e.result_id) }}">#{{ e.result_id }}</a>{% endif %}</td>
+      <td>{{ e.action }}</td><td>{{ e.detail or '' }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Consulte su resultado</h1>
+<p>Use la CURP y el código de 6 números que recibió por mensaje.</p>
+<form method="post" class="card narrow">
+  <label>CURP <input name="national_id" autocomplete="off" required autofocus></label>
+  <label>Código de retiro <input name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required></label>
+  <button type="submit">Ver mis documentos</button>
+</form>
+<p class="help">¿No tiene código o no puede ingresar? Acérquese a su puesto de salud con su identificación. Se lo entregamos en persona.</p>
+{% endblock %}

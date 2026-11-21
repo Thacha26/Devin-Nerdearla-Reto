@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Subir resultado escaneado</h1>
+<form method="post" enctype="multipart/form-data" class="card narrow">
+  <label>Archivo PDF <input type="file" name="file" accept="application/pdf,.pdf" required></label>
+  <button type="submit">Subir y cifrar</button>
+</form>
+<p class="help">El archivo se guarda cifrado. Después de subirlo, vincúlelo a la paciente.</p>
+{% endblock %}

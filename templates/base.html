@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}EIRA · Resultados{% endblock %}</title>
+  {# Local stylesheet, no CDN: the app must work without internet. #}
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header class="no-print">
+  <strong>EIRA · Resultados</strong>
+  <nav>
+    {% set role = session.get('role') %}
+    {% if role == 'physician' %}
+      <a href="{{ url_for('dashboard') }}">Panel</a>
+      <a href="{{ url_for('upload') }}">Subir PDF</a>
+      <a href="{{ url_for('outbox') }}">Notificaciones</a>
+      <a href="{{ url_for('audit') }}">Registro</a>
+      <a href="{{ url_for('export_csv') }}">Exportar CSV</a>
+    {% elif role == 'patient' %}
+      <a href="{{ url_for('patient_home') }}">Mis documentos</a>
+    {% endif %}
+    {% if role %}
+      <span class="who">{{ session.name }} ({{ ROLE_LABELS[role] }})</span>
+      <a href="{{ url_for('logout') }}">Salir</a>
+    {% endif %}
+  </nav>
+</header>
+<main>
+  {% for category, message in get_flashed_messages(with_categories=true) %}
+    <p class="flash {{ category }} no-print" role="status">{{ message }}</p>
+  {% endfor %}
+  {% block content %}{% endblock %}
+</main>
+<footer class="no-print">Prototipo con datos ficticios. El envío de SMS y correo es simulado.</footer>
+</body>
+</html>

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Panel de resultados</h1>
+<div class="counts">
+  <a class="count {% if not current %}active{% endif %}" href="{{ url_for('dashboard') }}">
+    <span class="n">{{ counts.values() | sum }}</span> Todos
+  </a>
+  {% for s in STATUSES %}
+  <a class="count {% if current == s %}active{% endif %}" href="{{ url_for('dashboard', status=s) }}">
+    <span class="n">{{ counts[s] }}</span> {{ STATUS_LABELS[s] }}
+  </a>
+  {% endfor %}
+</div>
+
+<table>
+  <thead><tr><th>#</th><th>Paciente</th><th>Estado</th><th>Actualizado</th><th></th></tr></thead>
+  <tbody>
+  {% for r in results %}
+    <tr>
+      <td>{{ r.id }}</td>
+      <td>{{ r.patient_name or '— sin vincular —' }}</td>
+      <td><span class="badge s-{{ r.status }}">{{ STATUS_LABELS[r.status] }}</span></td>
+      <td>{{ r.updated_at }}</td>
+      <td><a href="{{ url_for('result_detail', rid=r.id) }}">Abrir</a></td>
+    </tr>
+  {% else %}
+    <tr><td colspan="5">No hay resultados. <a href="{{ url_for('upload') }}">Subir el primero</a>.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
