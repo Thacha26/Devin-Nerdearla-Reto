@@ -20,12 +20,17 @@ from models import AFFILIATIONS, ROLE_LABELS, STATUS_LABELS, STATUSES, Transitio
 from security import actor, role_required
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# Vercel: the project folder is read-only and only /tmp is writable. /tmp is wiped
+# when the serverless instance is recycled, so data there is DEMO-ONLY.
+ON_VERCEL = bool(os.environ.get("VERCEL"))
+DATA_DIR = "/tmp/eira" if ON_VERCEL else BASE_DIR
 
 app = Flask(__name__)
 app.config.update(
-    DATABASE=os.environ.get("EIRA_DB", os.path.join(BASE_DIR, "app.db")),
-    STORAGE_DIR=os.environ.get("EIRA_STORAGE", os.path.join(BASE_DIR, "storage")),
-    MAX_CONTENT_LENGTH=10 * 1024 * 1024,  # 10 MB per PDF
+    DATABASE=os.environ.get("EIRA_DB", os.path.join(DATA_DIR, "app.db")),
+    STORAGE_DIR=os.environ.get("EIRA_STORAGE", os.path.join(DATA_DIR, "storage")),
+    # Vercel rejects request bodies over 4.5 MB, so cap uploads at 4 MB there.
+    MAX_CONTENT_LENGTH=(4 if ON_VERCEL else 10) * 1024 * 1024,
     DOWNLOAD_TOKEN_MAX_AGE=int(os.environ.get("EIRA_TOKEN_SECONDS", 300)),  # 5 minutes
     PERMANENT_SESSION_LIFETIME=timedelta(minutes=30),
     SESSION_COOKIE_HTTPONLY=True,
@@ -34,6 +39,13 @@ app.config.update(
 os.makedirs(app.config["STORAGE_DIR"], exist_ok=True)
 app.secret_key = security.load_or_create_secret(app.config["STORAGE_DIR"])
 init_db(app.config["DATABASE"])  # CREATE TABLE IF NOT EXISTS – safe on every start
+if ON_VERCEL or os.environ.get("EIRA_DEMO_AUTOSEED") == "1":
+    # Fresh instance with an empty database: load the fictitious demo users and patients.
+    with sqlite3.connect(app.config["DATABASE"]) as _conn:
+        _empty = _conn.execute("SELECT COUNT(*) FROM users").fetchone()[0] == 0
+    if _empty:
+        import seed
+        seed.populate(app.config["DATABASE"])
 app.teardown_appcontext(close_db)
 
 REVIEW_CHECKLIST = [

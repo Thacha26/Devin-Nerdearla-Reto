@@ -1,0 +1,10 @@
+.venv
+.git
+__pycache__
+app.db
+storage
+backups
+test_flow.py
+backup.sh
+.vercel
+.env*

@@ -157,15 +157,10 @@ def write_samples():
             fh.write(pdf)
 
 
-def main():
-    if os.path.exists(DB_PATH):
-        os.remove(DB_PATH)
-    os.makedirs(STORAGE_DIR, exist_ok=True)
-    for path in glob.glob(os.path.join(STORAGE_DIR, "*.bin")):
-        os.remove(path)
-
-    init_db(DB_PATH)
-    conn = sqlite3.connect(DB_PATH)
+def populate(db_path):
+    """Create tables and insert demo physicians and patients (no file changes)."""
+    init_db(db_path)
+    conn = sqlite3.connect(db_path)
     pw_hash = generate_password_hash(DEMO_PASSWORD)
     conn.executemany(
         "INSERT INTO users (username, full_name, role, password_hash) VALUES (?, ?, 'physician', ?)",
@@ -178,6 +173,16 @@ def main():
     )
     conn.commit()
     conn.close()
+
+
+def main():
+    if os.path.exists(DB_PATH):
+        os.remove(DB_PATH)
+    os.makedirs(STORAGE_DIR, exist_ok=True)
+    for path in glob.glob(os.path.join(STORAGE_DIR, "*.bin")):
+        os.remove(path)
+
+    populate(DB_PATH)
     write_samples()
 
     print("Base de datos lista:", DB_PATH)
