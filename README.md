@@ -2,6 +2,20 @@
 
 Hackathon prototype (Challenge 4): an alternative to WhatsApp for reviewing, authorizing, notifying and delivering Pap smear results. It runs on one PC on the local network and works **without internet**. See [PLAN.md](PLAN.md) for the full plan.
 
+## Live demo
+
+**https://eira-resultados.vercel.app**: physician login `medica` / `demo1234`; patient portal at `/patient/login`.
+
+The online demo is **temporary**: Vercel has no permanent disk, so uploaded results, new patients and log entries can disappear when the app restarts. The demo physicians and patients reload on their own. All data is fictitious.
+
+To deploy changes (needs access to the Vercel project `eira-resultados`):
+
+```bash
+npx vercel deploy --prod
+```
+
+The deploy reads `EIRA_SECRET_KEY` and `EIRA_FERNET_KEY` from the Vercel project's production settings; they are not in the code.
+
 ## Run it
 
 ```bash
