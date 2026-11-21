@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{% if editing %}Editar paciente{% else %}Registrar paciente{% endif %}</h1>
+{% if errors %}
+  <div class="flash error" role="alert">
+    {% for e in errors %}<div>{{ e }}</div>{% endfor %}
+  </div>
+{% endif %}
+<form method="post" class="card form-grid">
+  {% if editing %}
+    <label>ID EIRA <input value="{{ form.id_eira }}" disabled>
+      <span class="help">No se puede cambiar.</span></label>
+  {% else %}
+    <label>ID EIRA * <input name="id_eira" value="{{ form.id_eira }}" required></label>
+  {% endif %}
+  <label>Nombre completo * <input name="full_name" value="{{ form.full_name }}" required></label>
+  <label>CURP * <input name="national_id" value="{{ form.national_id }}" maxlength="18" required></label>
+  <label>Fecha de nacimiento * <input name="birth_date" type="date" value="{{ form.birth_date }}" required></label>
+  <label>Teléfono 1 * <input name="phone_1" type="tel" value="{{ form.phone_1 }}" required>
+    <span class="help">Puede ser de un familiar o vecina.</span></label>
+  <label>Teléfono 2 <input name="phone_2" type="tel" value="{{ form.phone_2 }}"></label>
+  <label>Domicilio 1 <input name="address_1" value="{{ form.address_1 }}"></label>
+  <label>Domicilio 2 (referencias) <input name="address_2" value="{{ form.address_2 }}"></label>
+  <label>Correo <input name="email" type="email" value="{{ form.email }}"></label>
+  <label>Afiliación *
+    <select name="affiliation" required>
+      <option value="">Seleccione…</option>
+      {% for a in affiliations %}
+        <option value="{{ a }}" {% if form.affiliation == a %}selected{% endif %}>{{ a }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>Número de afiliación <input name="affiliation_number" value="{{ form.affiliation_number }}"></label>
+  <div class="actions">
+    <button type="submit">{% if editing %}Guardar cambios{% else %}Guardar paciente{% endif %}</button>
+    {% if editing %}<a href="{{ url_for('patients') }}">Cancelar</a>{% endif %}
+    {% if next_result %}<a href="{{ url_for('result_detail', rid=next_result) }}">Volver al resultado #{{ next_result }}</a>{% endif %}
+  </div>
+</form>
+<p class="help">* Obligatorio</p>
+{% endblock %}

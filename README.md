@@ -44,6 +44,7 @@ Sample PDFs are in `sample/`.
 | Implemented | Simulated / not included |
 |---|---|
 | Upload with PDF check; files **encrypted at rest** (Fernet) | SMS and email sending (the outbox shows what would be sent) |
+| Patient registration, search and editing (required fields, 8 affiliations, no duplicate ID EIRA or CURP) | |
 | Linking with identity check (CURP + birth date) | Real patient data (all fictitious) |
 | Review checklist + clinical authorization; rejection with reason | HTTPS, hosting, key management (the key sits in `storage/`) |
 | Workflow enforced in a single `transition()` function | Separate lab and EIRA-admin roles (only `physician` and `patient`) |

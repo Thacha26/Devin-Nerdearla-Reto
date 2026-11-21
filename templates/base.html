@@ -15,6 +15,8 @@
     {% if role == 'physician' %}
       <a href="{{ url_for('dashboard') }}">Panel</a>
       <a href="{{ url_for('upload') }}">Subir PDF</a>
+      <a href="{{ url_for('patients') }}">Pacientes</a>
+      <a href="{{ url_for('physicians') }}">Médicos</a>
       <a href="{{ url_for('outbox') }}">Notificaciones</a>
       <a href="{{ url_for('audit') }}">Registro</a>
       <a href="{{ url_for('export_csv') }}">Exportar CSV</a>

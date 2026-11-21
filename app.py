@@ -6,6 +6,7 @@ Roles: physician (all staff steps) and patient (portal).
 import csv
 import io
 import os
+import sqlite3
 from datetime import timedelta
 
 from flask import Flask, Response, abort, flash, redirect, render_template, request, send_file, session, url_for
@@ -15,7 +16,7 @@ from werkzeug.utils import secure_filename
 
 import notify
 import security
-from models import ROLE_LABELS, STATUS_LABELS, STATUSES, TransitionError, close_db, get_db, init_db, log, now, transition
+from models import AFFILIATIONS, ROLE_LABELS, STATUS_LABELS, STATUSES, TransitionError, close_db, get_db, init_db, log, now, transition
 from security import actor, role_required
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -252,6 +253,152 @@ def assisted_delivery(rid):
         detail = "Entrega asistida ({})".format("con código" if code else "sin código, identificación presentada")
         try_transition(rid, "DELIVERED", "Identidad verificada. Puede imprimir el resultado.", detail=detail)
     return redirect(url_for("result_detail", rid=rid))
+
+
+# ---------- physicians ----------
+
+MIN_PASSWORD_LENGTH = 8
+
+
+@app.route("/physicians")
+@role_required("physician")
+def physicians():
+    rows = get_db().execute("SELECT id, username, full_name FROM users ORDER BY full_name").fetchall()
+    return render_template("physicians.html", physicians=rows)
+
+
+@app.route("/physicians/new", methods=["GET", "POST"])
+@role_required("physician")
+def physician_new():
+    form = {"username": "", "full_name": ""}
+    errors = []
+    if request.method == "POST":
+        form = {"username": request.form.get("username", "").strip().lower(),
+                "full_name": request.form.get("full_name", "").strip()}
+        password = request.form.get("password", "")
+        if not form["username"]:
+            errors.append("Falta: Usuario")
+        elif not form["username"].replace(".", "").replace("_", "").isalnum():
+            errors.append("El usuario solo puede tener letras, números, punto o guion bajo.")
+        if not form["full_name"]:
+            errors.append("Falta: Nombre completo")
+        if len(password) < MIN_PASSWORD_LENGTH:
+            errors.append("La contraseña debe tener al menos {} caracteres.".format(MIN_PASSWORD_LENGTH))
+        elif password != request.form.get("password_confirm", ""):
+            errors.append("Las contraseñas no coinciden.")
+        if not errors:
+            db = get_db()
+            try:
+                db.execute(
+                    "INSERT INTO users (username, full_name, role, password_hash) VALUES (?, ?, 'physician', ?)",
+                    (form["username"], form["full_name"], generate_password_hash(password)),
+                )
+                db.commit()
+            except sqlite3.IntegrityError:
+                errors.append("Ya existe ese usuario.")
+            else:
+                log(db, actor(), None, "Médica/o registrada/o", "usuario " + form["username"])
+                flash("Cuenta de {} creada. Comparta la contraseña en persona.".format(form["full_name"]), "ok")
+                return redirect(url_for("physicians"))
+    return render_template("physician_form.html", form=form, errors=errors, min_length=MIN_PASSWORD_LENGTH)
+
+
+# ---------- patients ----------
+
+PATIENT_FIELDS = ["id_eira", "full_name", "national_id", "birth_date", "phone_1", "phone_2",
+                  "address_1", "address_2", "email", "affiliation", "affiliation_number"]
+REQUIRED_PATIENT_FIELDS = {
+    "id_eira": "ID EIRA", "full_name": "Nombre completo", "national_id": "CURP",
+    "birth_date": "Fecha de nacimiento", "phone_1": "Teléfono 1", "affiliation": "Afiliación",
+}
+
+
+@app.route("/patients")
+@role_required("physician")
+def patients():
+    q = request.args.get("q", "").strip()
+    query = "SELECT p.*, (SELECT COUNT(*) FROM results r WHERE r.id_eira = p.id_eira) AS n_results FROM patients p"
+    params = ()
+    if q:
+        query += " WHERE p.full_name LIKE ? OR p.national_id LIKE ? OR p.id_eira LIKE ?"
+        params = ("%{}%".format(q),) * 3
+    rows = get_db().execute(query + " ORDER BY p.full_name", params).fetchall()
+    return render_template("patients.html", patients=rows, q=q)
+
+
+def read_patient_form():
+    """Read and validate the patient form. Returns (form, errors)."""
+    form = {f: request.form.get(f, "").strip() for f in PATIENT_FIELDS}
+    form["national_id"] = form["national_id"].upper()
+    form["id_eira"] = form["id_eira"].upper()
+    errors = ["Falta: " + label for f, label in REQUIRED_PATIENT_FIELDS.items() if not form[f]]
+    if form["affiliation"] and form["affiliation"] not in AFFILIATIONS:
+        errors.append("Afiliación no válida.")
+    if form["email"] and "@" not in form["email"]:
+        errors.append("Correo no válido.")
+    return form, errors
+
+
+@app.route("/patients/<id_eira>/edit", methods=["GET", "POST"])
+@role_required("physician")
+def patient_edit(id_eira):
+    db = get_db()
+    patient = get_patient(id_eira)
+    if patient is None:
+        abort(404)
+    form, errors = dict(patient), []
+    if request.method == "POST":
+        form, errors = read_patient_form()
+        form["id_eira"] = patient["id_eira"]  # primary key, referenced by results: never changes
+        if not errors:
+            changed = [f for f in PATIENT_FIELDS if (form[f] or None) != patient[f]]
+            if not changed:
+                flash("No hubo cambios.", "ok")
+                return redirect(url_for("patients"))
+            editable = [f for f in PATIENT_FIELDS if f != "id_eira"]
+            try:
+                db.execute(
+                    "UPDATE patients SET {} WHERE id_eira = :id_eira".format(", ".join("{0} = :{0}".format(f) for f in editable)),
+                    {f: (form[f] or None) for f in PATIENT_FIELDS},
+                )
+                db.commit()
+            except sqlite3.IntegrityError:
+                errors.append("Ya existe otra paciente con esa CURP.")
+            else:
+                # Log which fields changed, not their values (data minimization).
+                log(db, actor(), None, "Paciente editada", "id_eira {}: {}".format(id_eira, ", ".join(changed)))
+                flash("Datos de {} actualizados.".format(form["full_name"]), "ok")
+                return redirect(url_for("patients"))
+    return render_template("patient_form.html", form=form, errors=errors, affiliations=AFFILIATIONS,
+                           editing=True, next_result=None)
+
+
+@app.route("/patients/new", methods=["GET", "POST"])
+@role_required("physician")
+def patient_new():
+    form = {f: "" for f in PATIENT_FIELDS}
+    errors = []
+    if request.method == "POST":
+        form, errors = read_patient_form()
+        if not errors:
+            db = get_db()
+            values = {f: (form[f] or None) for f in PATIENT_FIELDS}
+            try:
+                db.execute(
+                    "INSERT INTO patients ({}) VALUES ({})".format(
+                        ", ".join(PATIENT_FIELDS), ", ".join(":" + f for f in PATIENT_FIELDS)),
+                    values,
+                )
+                db.commit()
+            except sqlite3.IntegrityError:
+                errors.append("Ya existe una paciente con ese ID EIRA o esa CURP.")
+            else:
+                log(db, actor(), None, "Paciente registrada", "id_eira " + form["id_eira"])
+                flash("Paciente {} registrada.".format(form["full_name"]), "ok")
+                back = request.args.get("next_result", type=int)
+                return redirect(url_for("result_detail", rid=back) if back else url_for("patients"))
+    return render_template("patient_form.html", form=form, errors=errors, affiliations=AFFILIATIONS,
+                           next_result=request.args.get("next_result", type=int))
 
 
 # ---------- notifications, audit, export ----------
