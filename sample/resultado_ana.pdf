@@ -9,13 +9,13 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
 endobj
 4 0 obj
-<< /Length 287 >>
+<< /Length 1993 >>
 stream
-BT /F1 14 Tf 72 740 Td 22 TL (LABORATORIO DEMO - DOCUMENTO FICTICIO) Tj T* () Tj T* (Paciente: Ana Gomez Ruiz) Tj T* (Identificacion: GORA790930MDFMZN02) Tj T* (Fecha de nacimiento: 1979-09-30) Tj T* (Estudio: Papanicolaou) Tj T* () Tj T* (SIN VALOR CLINICO - SOLO PARA PRUEBAS) Tj T* ET
+BT /F1 10 Tf 50 760 Td 13 TL (LABORATORIO DEMO - REPORTE DE CITOLOGÍA CERVICAL \(FICTICIO\)) Tj T* () Tj T* () Tj T* (I. IDENTIFICACIÓN) Tj T* (1. Folio: CC-2026-000102) Tj T* (2. ID EIRA: EIRA-0002) Tj T* (3. Nombre completo: Ana Gomez Ruiz) Tj T* (4. CURP: GORA790930MDFMZN02) Tj T* (5. Fecha de nacimiento: 1979-09-30) Tj T* (6. Edad \(años\): 47) Tj T* (7. Afiliación: ISSSTE) Tj T* (8. Unidad de salud donde se tomó la muestra: Unidad Médica Ficticia Norte) Tj T* () Tj T* (II. ANTECEDENTES CLÍNICOS) Tj T* (9. Fecha de toma de la muestra: 2026-10-28) Tj T* (10. Fecha de última menstruación \(FUM\): 2026-10-15) Tj T* (11. Gestas: 2) Tj T* (12. Partos: 2) Tj T* (13. Cesáreas: 0) Tj T* (14. Abortos: 0) Tj T* (15. Método anticonceptivo actual: 5. DIU) Tj T* (16. Embarazo actual: 2. No) Tj T* (17. Menopausia: 2. No) Tj T* (18. Citología previa: 1. Sí) Tj T* (18.1. Año de la citología previa: 2022) Tj T* (19. Resultado anormal previo: 2. No) Tj T* (20. Vacuna contra VPH: 2. No) Tj T* () Tj T* (III. TOMA DE LA MUESTRA) Tj T* (21. Aspecto del cuello uterino: 1. De aspecto normal) Tj T* (22. Instrumento de toma: 3. Espátula y citocepillo) Tj T* (23. Tipo de muestra: 1. Extendido convencional) Tj T* (24. Tomada por: Dra. Ficticia Uno) Tj T* (25. Fecha de recepción en laboratorio: 2026-10-30) Tj T* () Tj T* (IV. RESULTADO) Tj T* (26. Calidad de la muestra: 1. Adecuada) Tj T* (26.1. Presencia de zona de transformación: 1. Sí) Tj T* (27. Diagnóstico \(Bethesda\): 4. Lesión escamosa intraepitelial de bajo grado \(LEIBG / LSIL\)) Tj T* (28. Repetir estudio: 2. No) Tj T* (28.1. Motivo de repetición: -) Tj T* (29. Otros hallazgos: B3. Cambios celulares reactivos asociados a DIU) Tj T* (30. Revisado por patólogo/a: 1. Sí) Tj T* (30.1. Patólogo/a: Dr. Patólogo Ficticio) Tj T* (31. Recomendación: 3. Referir a colposcopia) Tj T* (32. Citotecnólogo/a: Citotecnóloga Ficticia B) Tj T* (33. Fecha del reporte: 2026-11-12) Tj T* () Tj T* (SIN VALOR CLÍNICO - SOLO PARA PRUEBAS) Tj T* ET
 endstream
 endobj
 5 0 obj
-<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
 endobj
 xref
 0 6
@@ -24,9 +24,9 @@ xref
 0000000058 00000 n 
 0000000115 00000 n 
 0000000241 00000 n 
-0000000579 00000 n 
+0000002286 00000 n 
 trailer
 << /Size 6 /Root 1 0 R >>
 startxref
-649
+2383
 %%EOF

@@ -61,7 +61,8 @@ app.py        routes (physician + patient portal)
 models.py     SQLite schema, statuses, transition()
 security.py   roles, encryption, download tokens, pickup codes
 notify.py     outbox + simulated sender
-seed.py       fictitious data + sample PDFs
+seed.py       fictitious data + sample PDFs (generated from data/cytology_profiles.json)
+data/cytology_profiles.json  ASSUMED cytology form skeleton + 3 fictional profiles
 test_flow.py  end-to-end test
 templates/    pages (Spanish); static/style.css (local, no CDN)
 backup.sh     copy of app.db + storage/ to backups/
