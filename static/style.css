@@ -1,7 +1,11 @@
 /* Plain, high-contrast, large-text styles. Served locally so the app works offline.
    Palette taken from eiraac.org (css/main.css): maroon #7d3b3b, plum #6a2b51,
-   rose #ffa9b8, light pinks #ffd7de / #ffebee, text #2e2e2e. Font: Montserrat
-   when installed, otherwise the system font (no Google Fonts: must work offline). */
+   rose #ffa9b8, light pinks #ffd7de / #ffebee, text #2e2e2e.
+   Font: Montserrat served from static/fonts (latin subset, SIL OFL 1.1, see OFL.txt),
+   not Google Fonts, so it works offline. */
+@font-face { font-family: "Montserrat"; font-style: normal; font-weight: 400; font-display: swap; src: url("fonts/montserrat-latin-400.woff2") format("woff2"); }
+@font-face { font-family: "Montserrat"; font-style: normal; font-weight: 600; font-display: swap; src: url("fonts/montserrat-latin-600.woff2") format("woff2"); }
+@font-face { font-family: "Montserrat"; font-style: normal; font-weight: 700; font-display: swap; src: url("fonts/montserrat-latin-700.woff2") format("woff2"); }
 :root {
   --bg: #ffffff; --fg: #2e2e2e; --muted: #5a4a4d; --line: #f0d2d8;
   --accent: #7d3b3b; --accent-2: #6a2b51; --accent-fg: #ffffff; --rose: #ffa9b8;
