@@ -278,19 +278,60 @@ def patients():
     return render_template("patients.html", patients=rows, q=q)
 
 
+def read_patient_form():
+    """Read and validate the patient form. Returns (form, errors)."""
+    form = {f: request.form.get(f, "").strip() for f in PATIENT_FIELDS}
+    form["national_id"] = form["national_id"].upper()
+    form["id_eira"] = form["id_eira"].upper()
+    errors = ["Falta: " + label for f, label in REQUIRED_PATIENT_FIELDS.items() if not form[f]]
+    if form["affiliation"] and form["affiliation"] not in AFFILIATIONS:
+        errors.append("Afiliación no válida.")
+    if form["email"] and "@" not in form["email"]:
+        errors.append("Correo no válido.")
+    return form, errors
+
+
+@app.route("/patients/<id_eira>/edit", methods=["GET", "POST"])
+@role_required("physician")
+def patient_edit(id_eira):
+    db = get_db()
+    patient = get_patient(id_eira)
+    if patient is None:
+        abort(404)
+    form, errors = dict(patient), []
+    if request.method == "POST":
+        form, errors = read_patient_form()
+        form["id_eira"] = patient["id_eira"]  # primary key, referenced by results: never changes
+        if not errors:
+            changed = [f for f in PATIENT_FIELDS if (form[f] or None) != patient[f]]
+            if not changed:
+                flash("No hubo cambios.", "ok")
+                return redirect(url_for("patients"))
+            editable = [f for f in PATIENT_FIELDS if f != "id_eira"]
+            try:
+                db.execute(
+                    "UPDATE patients SET {} WHERE id_eira = :id_eira".format(", ".join("{0} = :{0}".format(f) for f in editable)),
+                    {f: (form[f] or None) for f in PATIENT_FIELDS},
+                )
+                db.commit()
+            except sqlite3.IntegrityError:
+                errors.append("Ya existe otra paciente con esa CURP.")
+            else:
+                # Log which fields changed, not their values (data minimization).
+                log(db, actor(), None, "Paciente editada", "id_eira {}: {}".format(id_eira, ", ".join(changed)))
+                flash("Datos de {} actualizados.".format(form["full_name"]), "ok")
+                return redirect(url_for("patients"))
+    return render_template("patient_form.html", form=form, errors=errors, affiliations=AFFILIATIONS,
+                           editing=True, next_result=None)
+
+
 @app.route("/patients/new", methods=["GET", "POST"])
 @role_required("physician")
 def patient_new():
-    form = {f: request.form.get(f, "").strip() for f in PATIENT_FIELDS}
+    form = {f: "" for f in PATIENT_FIELDS}
     errors = []
     if request.method == "POST":
-        form["national_id"] = form["national_id"].upper()
-        form["id_eira"] = form["id_eira"].upper()
-        errors = ["Falta: " + label for f, label in REQUIRED_PATIENT_FIELDS.items() if not form[f]]
-        if form["affiliation"] and form["affiliation"] not in AFFILIATIONS:
-            errors.append("Afiliación no válida.")
-        if form["email"] and "@" not in form["email"]:
-            errors.append("Correo no válido.")
+        form, errors = read_patient_form()
         if not errors:
             db = get_db()
             values = {f: (form[f] or None) for f in PATIENT_FIELDS}

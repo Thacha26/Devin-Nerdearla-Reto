@@ -141,6 +141,26 @@ def test_register_patient():
     link_and_authorize(c, rid, {"national_id": "TELA900101MDFSSS09", "birth_date": "1990-01-01"})
 
 
+def test_edit_patient():
+    c = physician()
+    p = dict(seed.PATIENTS[1])
+    url = "/patients/{}/edit".format(p["id_eira"])
+    assert p["full_name"].encode() in c.get(url).data
+    form = {k: (v or "") for k, v in p.items()}
+    # Required field can't be emptied
+    assert "Teléfono 1".encode() in c.post(url, data=dict(form, phone_1="")).data
+    # Can't take another patient's CURP
+    assert "Ya existe".encode() in c.post(url, data=dict(form, national_id=seed.PATIENTS[0]["national_id"])).data
+    # Valid change is saved; id_eira can't be changed even if posted
+    assert c.post(url, data=dict(form, phone_1="55 1234 5678", id_eira="HACK")).status_code == 302
+    with sqlite3.connect(os.environ["EIRA_DB"]) as db:
+        assert db.execute("SELECT phone_1 FROM patients WHERE id_eira = ?", (p["id_eira"],)).fetchone()[0] == "55 1234 5678"
+        assert db.execute("SELECT COUNT(*) FROM patients WHERE id_eira = 'HACK'").fetchone()[0] == 0
+        detail = db.execute("SELECT detail FROM audit_log WHERE action = 'Paciente editada' ORDER BY id DESC").fetchone()[0]
+    assert "phone_1" in detail and "5678" not in detail  # logs field names, not values
+    assert c.get("/patients/NOPE/edit").status_code == 404
+
+
 def test_database_rules():
     with sqlite3.connect(os.environ["EIRA_DB"]) as db:
         for bad in [("X1", "AAA", "", "IMSS"), ("X2", "BBB", "55 1", "FAKE")]:  # no phone_1 / bad affiliation
@@ -161,5 +181,6 @@ if __name__ == "__main__":
     test_portal_flow()
     test_assisted_flow()
     test_register_patient()
+    test_edit_patient()
     test_database_rules()
     print("OK: all flows passed")
