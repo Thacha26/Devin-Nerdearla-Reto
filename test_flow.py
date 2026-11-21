@@ -161,6 +161,23 @@ def test_edit_patient():
     assert c.get("/patients/NOPE/edit").status_code == 404
 
 
+def test_add_physician():
+    c = physician()
+    new = {"full_name": "Dra. Nueva", "username": "Dra.Nueva", "password": "segura123", "password_confirm": "segura123"}
+    assert "al menos".encode() in c.post("/physicians/new", data=dict(new, password="corta", password_confirm="corta")).data
+    assert "no coinciden".encode() in c.post("/physicians/new", data=dict(new, password_confirm="otra12345")).data
+    assert c.post("/physicians/new", data=new).status_code == 302
+    assert b"dra.nueva" in c.get("/physicians").data
+    assert "Ya existe".encode() in c.post("/physicians/new", data=new).data
+    # The new physician can log in (username is stored lower-case)
+    assert app.test_client().post("/login", data={"username": "dra.nueva", "password": "segura123"}).status_code == 302
+    # Patients can't create accounts
+    p = app.test_client()
+    with p.session_transaction() as s:
+        s.update(role="patient", id_eira="EIRA-0001", actor_id="EIRA-0001", name="x")
+    assert p.post("/physicians/new", data=new).status_code == 403
+
+
 def test_database_rules():
     with sqlite3.connect(os.environ["EIRA_DB"]) as db:
         for bad in [("X1", "AAA", "", "IMSS"), ("X2", "BBB", "55 1", "FAKE")]:  # no phone_1 / bad affiliation
@@ -182,5 +199,6 @@ if __name__ == "__main__":
     test_assisted_flow()
     test_register_patient()
     test_edit_patient()
+    test_add_physician()
     test_database_rules()
     print("OK: all flows passed")

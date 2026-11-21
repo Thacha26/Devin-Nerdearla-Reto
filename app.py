@@ -255,6 +255,54 @@ def assisted_delivery(rid):
     return redirect(url_for("result_detail", rid=rid))
 
 
+# ---------- physicians ----------
+
+MIN_PASSWORD_LENGTH = 8
+
+
+@app.route("/physicians")
+@role_required("physician")
+def physicians():
+    rows = get_db().execute("SELECT id, username, full_name FROM users ORDER BY full_name").fetchall()
+    return render_template("physicians.html", physicians=rows)
+
+
+@app.route("/physicians/new", methods=["GET", "POST"])
+@role_required("physician")
+def physician_new():
+    form = {"username": "", "full_name": ""}
+    errors = []
+    if request.method == "POST":
+        form = {"username": request.form.get("username", "").strip().lower(),
+                "full_name": request.form.get("full_name", "").strip()}
+        password = request.form.get("password", "")
+        if not form["username"]:
+            errors.append("Falta: Usuario")
+        elif not form["username"].replace(".", "").replace("_", "").isalnum():
+            errors.append("El usuario solo puede tener letras, números, punto o guion bajo.")
+        if not form["full_name"]:
+            errors.append("Falta: Nombre completo")
+        if len(password) < MIN_PASSWORD_LENGTH:
+            errors.append("La contraseña debe tener al menos {} caracteres.".format(MIN_PASSWORD_LENGTH))
+        elif password != request.form.get("password_confirm", ""):
+            errors.append("Las contraseñas no coinciden.")
+        if not errors:
+            db = get_db()
+            try:
+                db.execute(
+                    "INSERT INTO users (username, full_name, role, password_hash) VALUES (?, ?, 'physician', ?)",
+                    (form["username"], form["full_name"], generate_password_hash(password)),
+                )
+                db.commit()
+            except sqlite3.IntegrityError:
+                errors.append("Ya existe ese usuario.")
+            else:
+                log(db, actor(), None, "Médica/o registrada/o", "usuario " + form["username"])
+                flash("Cuenta de {} creada. Comparta la contraseña en persona.".format(form["full_name"]), "ok")
+                return redirect(url_for("physicians"))
+    return render_template("physician_form.html", form=form, errors=errors, min_length=MIN_PASSWORD_LENGTH)
+
+
 # ---------- patients ----------
 
 PATIENT_FIELDS = ["id_eira", "full_name", "national_id", "birth_date", "phone_1", "phone_2",

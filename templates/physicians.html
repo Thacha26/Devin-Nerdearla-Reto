@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Médicas y médicos</h1>
+<p><a class="button secondary" href="{{ url_for('physician_new') }}">Registrar médica/o</a></p>
+<table>
+  <thead><tr><th>Usuario</th><th>Nombre</th></tr></thead>
+  <tbody>
+  {% for u in physicians %}
+    <tr><td>{{ u.username }}</td><td>{{ u.full_name }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
